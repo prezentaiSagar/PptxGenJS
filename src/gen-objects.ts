@@ -1150,16 +1150,20 @@ export function addPlaceholdersToSlideLayouts(slide: PresSlide): void {
 export function addBackgroundDefinition(props: BackgroundProps, target: SlideLayout): void {
 	// A: @deprecated
 	if (target.bkgd) {
-		if (!target.background) target.background = {}
+		if (!target.background) target.background = { color: '' }
 
-		if (typeof target.bkgd === 'string') target.background.color = target.bkgd
-		else {
+		if (typeof target.bkgd === 'string') {
+			(target.background as { color?: string }).color = target.bkgd
+		} else {
 			if (target.bkgd.data) target.background.data = target.bkgd.data
 			if (target.bkgd.path) target.background.path = target.bkgd.path
-			if (target.bkgd.src) target.background.path = target.bkgd.src // @deprecated (drop in 4.x)
+			if ('src' in target.bkgd && target.bkgd.src) target.background.path = target.bkgd.src // @deprecated (drop in 4.x)
 		}
 	}
-	if (target.background?.fill) target.background.color = target.background.fill
+	// Handle deprecated fill property
+	if (target.background && 'fill' in target.background && target.background.fill) {
+		(target.background as { color?: string }).color = target.background.fill
+	}
 
 	// B: Handle media
 	if (props && (props.path || props.data)) {
@@ -1249,3 +1253,4 @@ function createHyperlinkRels(
 		}
 	})
 }
+

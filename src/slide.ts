@@ -85,9 +85,12 @@ export default class Slide {
 	private _bkgd: string | BackgroundProps
 	public set bkgd(value: string | BackgroundProps) {
 		this._bkgd = value
-		if (!this._background?.color) {
-			if (!this._background) this._background = {}
-			if (typeof value === 'string') this._background.color = value
+		// Only set _background if it doesn't already have a color (for solid fills)
+		const hasSolidColor = this._background && 'color' in this._background && this._background.color
+		if (!hasSolidColor) {
+			if (typeof value === 'string') {
+				this._background = { color: value }
+			}
 		}
 	}
 

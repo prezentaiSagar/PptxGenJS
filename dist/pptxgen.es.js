@@ -1,4 +1,4 @@
-/* PptxGenJS 4.0.1 @ 2025-06-25T23:35:35.098Z */
+/* PptxGenJS 4.0.3 @ 2026-01-02T05:17:55.263Z */
 import JSZip from 'jszip';
 
 /******************************************************************************
@@ -784,31 +784,103 @@ function createGlowElement(options, defaults) {
  * @returns XML string
  */
 function genXmlColorSelection(props) {
-    let fillType = 'solid';
-    let colorVal = '';
-    let internalElements = '';
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+    if (!props) {
+        return '';
+    }
     let outText = '';
-    if (props) {
-        if (typeof props === 'string')
-            colorVal = props;
-        else {
-            if (props.type)
-                fillType = props.type;
-            if (props.color)
-                colorVal = props.color;
-            if (props.alpha)
-                internalElements += `<a:alpha val="${Math.round((100 - props.alpha) * 1000)}"/>`; // DEPRECATED: @deprecated v3.3.0
-            if (props.transparency)
-                internalElements += `<a:alpha val="${Math.round((100 - props.transparency) * 1000)}"/>`;
+    let safeProps = {};
+    if (typeof props === 'string') {
+        safeProps.type = 'solid';
+        safeProps.color = props;
+    }
+    else {
+        safeProps = props;
+        safeProps.type = (_a = props.type) !== null && _a !== void 0 ? _a : 'solid';
+    }
+    switch (safeProps.type) {
+        case 'solid': {
+            const transparency = (_b = safeProps.transparency) !== null && _b !== void 0 ? _b : safeProps.alpha;
+            const internalElements = transparency
+                ? `<a:alpha val="${Math.round((100 - transparency) * 1000)}"/>`
+                : undefined;
+            outText += `<a:solidFill>${createColorElement((_c = safeProps.color) !== null && _c !== void 0 ? _c : '', internalElements)}</a:solidFill>`;
+            break;
         }
-        switch (fillType) {
-            case 'solid':
-                outText += `<a:solidFill>${createColorElement(colorVal, internalElements)}</a:solidFill>`;
-                break;
-            default: // @note need a statement as having only "break" is removed by rollup, then tiggers "no-default" js-linter
-                outText += '';
-                break;
+        case 'linearGradient': {
+            const stops = (_d = safeProps.stops) !== null && _d !== void 0 ? _d : [];
+            const rotWithShape = (_e = safeProps.rotWithShape) !== null && _e !== void 0 ? _e : true;
+            const flip = (_f = safeProps.flip) !== null && _f !== void 0 ? _f : 'none';
+            outText += `<a:gradFill rotWithShape="${rotWithShape ? 1 : 0}" flip="${flip}">`;
+            if (stops.length > 0) {
+                outText += '<a:gsLst>';
+                outText += stops.map(({ position, color: stopColor, transparency }) => {
+                    const stopInternalElements = transparency
+                        ? `<a:alpha val="${Math.round((100 - transparency) * 1000)}"/>`
+                        : '';
+                    return `<a:gs pos="${position * 1000}">${createColorElement(stopColor, stopInternalElements)}</a:gs>`;
+                }).join('');
+                outText += '</a:gsLst>';
+            }
+            if (safeProps.angle) {
+                const ang = convertRotationDegrees(safeProps.angle);
+                const scaled = (_g = safeProps.scaled) !== null && _g !== void 0 ? _g : false;
+                outText += `<a:lin ang="${ang}" scaled="${scaled ? 1 : 0}"/>`;
+            }
+            if (safeProps.tileRect &&
+                (safeProps.tileRect.t ||
+                    safeProps.tileRect.r ||
+                    safeProps.tileRect.b ||
+                    safeProps.tileRect.l)) {
+                const tAttr = safeProps.tileRect.t ? `t="${safeProps.tileRect.t * 1000}"` : '';
+                const rAttr = safeProps.tileRect.r ? `r="${safeProps.tileRect.r * 1000}"` : '';
+                const bAttr = safeProps.tileRect.b ? `b="${safeProps.tileRect.b * 1000}"` : '';
+                const lAttr = safeProps.tileRect.l ? `l="${safeProps.tileRect.l * 1000}"` : '';
+                outText += `<a:tileRect ${tAttr} ${rAttr} ${bAttr} ${lAttr}/>`;
+            }
+            outText += '</a:gradFill>';
+            break;
         }
+        case 'pathGradient': {
+            const stops = (_h = safeProps.stops) !== null && _h !== void 0 ? _h : [];
+            const rotWithShape = (_j = safeProps.rotWithShape) !== null && _j !== void 0 ? _j : true;
+            const flip = (_k = safeProps.flip) !== null && _k !== void 0 ? _k : 'none';
+            const path = (_l = safeProps.path) !== null && _l !== void 0 ? _l : 'circle';
+            const fillToRect = (_m = safeProps.fillToRect) !== null && _m !== void 0 ? _m : { l: 50, t: 50, r: 50, b: 50 };
+            outText += `<a:gradFill rotWithShape="${rotWithShape ? 1 : 0}" flip="${flip}">`;
+            if (stops.length > 0) {
+                outText += '<a:gsLst>';
+                outText += stops.map(({ position, color: stopColor, transparency }) => {
+                    const stopInternalElements = transparency
+                        ? `<a:alpha val="${Math.round((100 - transparency) * 1000)}"/>`
+                        : '';
+                    return `<a:gs pos="${position * 1000}">${createColorElement(stopColor, stopInternalElements)}</a:gs>`;
+                }).join('');
+                outText += '</a:gsLst>';
+            }
+            // Path element with fillToRect
+            const lAttr = fillToRect.l !== undefined ? ` l="${Math.round(fillToRect.l * 1000)}"` : '';
+            const tAttr = fillToRect.t !== undefined ? ` t="${Math.round(fillToRect.t * 1000)}"` : '';
+            const rAttr = fillToRect.r !== undefined ? ` r="${Math.round(fillToRect.r * 1000)}"` : '';
+            const bAttr = fillToRect.b !== undefined ? ` b="${Math.round(fillToRect.b * 1000)}"` : '';
+            outText += `<a:path path="${path}"><a:fillToRect${lAttr}${tAttr}${rAttr}${bAttr}/></a:path>`;
+            if (safeProps.tileRect &&
+                (safeProps.tileRect.t ||
+                    safeProps.tileRect.r ||
+                    safeProps.tileRect.b ||
+                    safeProps.tileRect.l)) {
+                const tileT = safeProps.tileRect.t ? `t="${safeProps.tileRect.t * 1000}"` : '';
+                const tileR = safeProps.tileRect.r ? `r="${safeProps.tileRect.r * 1000}"` : '';
+                const tileB = safeProps.tileRect.b ? `b="${safeProps.tileRect.b * 1000}"` : '';
+                const tileL = safeProps.tileRect.l ? `l="${safeProps.tileRect.l * 1000}"` : '';
+                outText += `<a:tileRect ${tileT} ${tileR} ${tileB} ${tileL}/>`;
+            }
+            outText += '</a:gradFill>';
+            break;
+        }
+        default: // @note need a statement as having only "break" is removed by rollup, then tiggers "no-default" js-linter
+            outText += '';
+            break;
     }
     return outText;
 }
@@ -1850,8 +1922,14 @@ function addChartDefinition(target, type, data, opt) {
     if (options.border)
         options.plotArea.border = options.border; // @deprecated [[remove in v4.0]]
     options.plotArea.fill = options.plotArea.fill || { color: null, transparency: null };
-    if (options.fill)
-        options.plotArea.fill.color = options.fill; // @deprecated [[remove in v4.0]]
+    if (options.fill) {
+        const fill = {
+            type: 'solid',
+            color: options.fill, // @deprecated [[remove in v4.0]]
+            transparency: null,
+        };
+        options.plotArea.fill = fill;
+    }
     //
     options.chartArea = options.chartArea || {};
     options.chartArea.border = options.chartArea.border && typeof options.chartArea.border === 'object' ? options.chartArea.border : null;
@@ -2645,24 +2723,26 @@ function addPlaceholdersToSlideLayouts(slide) {
  * @param {PresSlide} target - slide object that the background is set to
  */
 function addBackgroundDefinition(props, target) {
-    var _a;
     // A: @deprecated
     if (target.bkgd) {
         if (!target.background)
-            target.background = {};
-        if (typeof target.bkgd === 'string')
+            target.background = { color: '' };
+        if (typeof target.bkgd === 'string') {
             target.background.color = target.bkgd;
+        }
         else {
             if (target.bkgd.data)
                 target.background.data = target.bkgd.data;
             if (target.bkgd.path)
                 target.background.path = target.bkgd.path;
-            if (target.bkgd.src)
+            if ('src' in target.bkgd && target.bkgd.src)
                 target.background.path = target.bkgd.src; // @deprecated (drop in 4.x)
         }
     }
-    if ((_a = target.background) === null || _a === void 0 ? void 0 : _a.fill)
+    // Handle deprecated fill property
+    if (target.background && 'fill' in target.background && target.background.fill) {
         target.background.color = target.background.fill;
+    }
     // B: Handle media
     if (props && (props.path || props.data)) {
         // Allow the use of only the data key (`path` isnt reqd)
@@ -2775,11 +2855,12 @@ class Slide {
     }
     set bkgd(value) {
         this._bkgd = value;
-        if (!this._background || !this._background.color) {
-            if (!this._background)
-                this._background = {};
-            if (typeof value === 'string')
-                this._background.color = value;
+        // Only set _background if it doesn't already have a color (for solid fills)
+        const hasSolidColor = this._background && 'color' in this._background && this._background.color;
+        if (!hasSolidColor) {
+            if (typeof value === 'string') {
+                this._background = { color: value };
+            }
         }
     }
     get bkgd() {
@@ -3382,7 +3463,7 @@ function createExcelWorksheet(chartObject, zip) {
  * @return {string} XML
  */
 function makeXmlCharts(rel) {
-    var _a, _b, _c, _d;
+    var _a, _b;
     let strXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
     let usesSecondaryValAxis = false;
     // STEP 1: Create chart
@@ -3517,7 +3598,9 @@ function makeXmlCharts(rel) {
         }
         strXml += '  <c:spPr>';
         // OPTION: Fill
-        strXml += ((_c = rel.opts.plotArea.fill) === null || _c === void 0 ? void 0 : _c.color) ? genXmlColorSelection(rel.opts.plotArea.fill) : '<a:noFill/>';
+        strXml += rel.opts.plotArea.fill.type === 'solid' || rel.opts.plotArea.fill.type === 'linearGradient'
+            ? genXmlColorSelection(rel.opts.plotArea.fill)
+            : '<a:noFill/>';
         // OPTION: Border
         strXml += rel.opts.plotArea.border
             ? `<a:ln w="${valToPts(rel.opts.plotArea.border.pt)}" cap="flat">${genXmlColorSelection(rel.opts.plotArea.border.color)}</a:ln>`
@@ -3562,7 +3645,9 @@ function makeXmlCharts(rel) {
     strXml += '</c:chart>';
     // D: CHARTSPACE SHAPE PROPS
     strXml += '<c:spPr>';
-    strXml += ((_d = rel.opts.chartArea.fill) === null || _d === void 0 ? void 0 : _d.color) ? genXmlColorSelection(rel.opts.chartArea.fill) : '<a:noFill/>';
+    strXml += rel.opts.chartArea.fill.type === 'solid' || rel.opts.chartArea.fill.type === 'linearGradient'
+        ? genXmlColorSelection(rel.opts.chartArea.fill)
+        : '<a:noFill/>';
     strXml += rel.opts.chartArea.border
         ? `<a:ln w="${valToPts(rel.opts.chartArea.border.pt)}" cap="flat">${genXmlColorSelection(rel.opts.chartArea.border.color)}</a:ln>`
         : '<a:ln><a:noFill/></a:ln>';
@@ -5090,14 +5175,13 @@ const ImageSizingXml = {
  * @return {string} XML string with <p:cSld> as the root
  */
 function slideObjectToXml(slide) {
-    var _a;
     let strSlideXml = slide._name ? '<p:cSld name="' + slide._name + '">' : '<p:cSld>';
     let intTableNum = 1;
     // STEP 1: Add background color/image (ensure only a single `<p:bg>` tag is created, ex: when master-baskground has both `color` and `path`)
     if (slide._bkgdImgRid) {
         strSlideXml += `<p:bg><p:bgPr><a:blipFill dpi="0" rotWithShape="1"><a:blip r:embed="rId${slide._bkgdImgRid}"><a:lum/></a:blip><a:srcRect/><a:stretch><a:fillRect/></a:stretch></a:blipFill><a:effectLst/></p:bgPr></p:bg>`;
     }
-    else if ((_a = slide.background) === null || _a === void 0 ? void 0 : _a.color) {
+    else if (slide.background && (('color' in slide.background && slide.background.color) || ('type' in slide.background && (slide.background.type === 'linearGradient' || slide.background.type === 'pathGradient')))) {
         strSlideXml += `<p:bg><p:bgPr>${genXmlColorSelection(slide.background)}</p:bgPr></p:bg>`;
     }
     else if (!slide.bkgd && slide._name && slide._name === DEF_PRES_LAYOUT_NAME) {
@@ -5948,8 +6032,15 @@ function genXmlTextRunProperties(opts, isDefault) {
         if (opts.outline && typeof opts.outline === 'object') {
             runProps += `<a:ln w="${valToPts(opts.outline.size || 0.75)}">${genXmlColorSelection(opts.outline.color || 'FFFFFF')}</a:ln>`;
         }
-        if (opts.color)
-            runProps += genXmlColorSelection({ color: opts.color, transparency: opts.transparency });
+        if (opts.color) {
+            // Support gradient text colors (LinearGradient or PathGradient objects)
+            if (typeof opts.color === 'object' && 'type' in opts.color) {
+                runProps += genXmlColorSelection(opts.color);
+            }
+            else {
+                runProps += genXmlColorSelection({ color: opts.color, transparency: opts.transparency });
+            }
+        }
         if (opts.highlight)
             runProps += `<a:highlight>${createColorElement(opts.highlight)}</a:highlight>`;
         if (typeof opts.underline === 'object' && opts.underline.color)
