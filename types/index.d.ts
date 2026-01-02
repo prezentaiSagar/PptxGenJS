@@ -1383,6 +1383,85 @@ declare namespace PptxGenJS {
 		 */
 		objectName?: string
 	}
+	/**
+	 * Theme color scheme - defines the 12 color slots used by PowerPoint themes
+	 * @see https://docs.microsoft.com/en-us/office/open-xml/working-with-the-theme-of-a-presentation
+	 */
+	export interface ThemeColorScheme {
+		/**
+		 * Dark 1 - Primary text color (maps to tx1/text1)
+		 * @default '000000' (black via system color windowText)
+		 * @example '1A1A2E'
+		 */
+		dark1?: HexColor
+		/**
+		 * Light 1 - Primary background color (maps to bg1/background1)
+		 * @default 'FFFFFF' (white via system color window)
+		 * @example 'F5F5F5'
+		 */
+		light1?: HexColor
+		/**
+		 * Dark 2 - Secondary text color (maps to tx2/text2)
+		 * @default '44546A'
+		 * @example '16213E'
+		 */
+		dark2?: HexColor
+		/**
+		 * Light 2 - Secondary background color (maps to bg2/background2)
+		 * @default 'E7E6E6'
+		 * @example 'E8E8E8'
+		 */
+		light2?: HexColor
+		/**
+		 * Accent 1 - First accent color
+		 * @default '4472C4' (blue)
+		 * @example '0F4C75'
+		 */
+		accent1?: HexColor
+		/**
+		 * Accent 2 - Second accent color
+		 * @default 'ED7D31' (orange)
+		 * @example '3282B8'
+		 */
+		accent2?: HexColor
+		/**
+		 * Accent 3 - Third accent color
+		 * @default 'A5A5A5' (gray)
+		 * @example 'BBE1FA'
+		 */
+		accent3?: HexColor
+		/**
+		 * Accent 4 - Fourth accent color
+		 * @default 'FFC000' (gold)
+		 * @example 'FF6B6B'
+		 */
+		accent4?: HexColor
+		/**
+		 * Accent 5 - Fifth accent color
+		 * @default '5B9BD5' (light blue)
+		 * @example '4ECDC4'
+		 */
+		accent5?: HexColor
+		/**
+		 * Accent 6 - Sixth accent color
+		 * @default '70AD47' (green)
+		 * @example '45B7D1'
+		 */
+		accent6?: HexColor
+		/**
+		 * Hyperlink color
+		 * @default '0563C1'
+		 * @example '1E90FF'
+		 */
+		hyperlink?: HexColor
+		/**
+		 * Followed (visited) hyperlink color
+		 * @default '954F72'
+		 * @example '9932CC'
+		 */
+		followedHyperlink?: HexColor
+	}
+
 	export interface ThemeProps {
 		/**
 		 * Headings font face name
@@ -1396,6 +1475,12 @@ declare namespace PptxGenJS {
 		 * @default 'Calibri'
 		 */
 		bodyFontFace?: string
+		/**
+		 * Theme color scheme
+		 * Defines the 12 color slots used throughout the presentation
+		 * @example { accent1: '0F4C75', accent2: '3282B8', dark1: '1A1A2E' }
+		 */
+		colors?: ThemeColorScheme
 	}
 
 	// image / media ==================================================================================
