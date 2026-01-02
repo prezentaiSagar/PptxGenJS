@@ -15,3 +15,5 @@ demo
 build
 docs
 static
+
+coverage/

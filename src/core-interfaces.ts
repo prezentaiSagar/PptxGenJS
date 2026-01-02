@@ -66,19 +66,21 @@ export interface DataOrPathProps {
 	 */
 	data?: string
 }
-export interface BackgroundProps extends DataOrPathProps, SolidShapeFillProps {
+/**
+ * Background properties for slides - supports solid colors, gradients, and images
+ */
+export type BackgroundProps = (DataOrPathProps & SolidShapeFillProps & {
 	/**
 	 * Color (hex format)
 	 * @deprecated v3.6.0 - use `ShapeFillProps` instead
 	 */
 	fill?: HexColor
-
 	/**
 	 * source URL
 	 * @deprecated v3.6.0 - use `DataOrPathProps` instead - remove in v4.0.0
 	 */
 	src?: string
-}
+}) | (DataOrPathProps & LinearGradientShapeFillProps) | (DataOrPathProps & PathGradientShapeFillProps)
 /**
  * Color in Hex format
  * @example 'FF3399'
@@ -232,6 +234,37 @@ export interface LinearGradientShapeFillProps extends BaseGradientShapeFillProps
 	 */
 	type: 'linearGradient'
 }
+export interface PathGradientShapeFillProps extends BaseGradientShapeFillProps {
+	/**
+	 * Fill type
+	 */
+	type: 'pathGradient'
+	/**
+	 * Path type for radial/path gradient
+	 * - 'circle' - circular gradient from center
+	 * - 'rect' - rectangular gradient from center
+	 * - 'shape' - gradient follows shape outline
+	 * @default 'circle'
+	 */
+	path?: 'circle' | 'rect' | 'shape'
+	/**
+	 * Fill to rectangle - defines the gradient center position
+	 * - Values are percentages (0-100) from each edge
+	 * - l: left, t: top, r: right, b: bottom
+	 * @default { l: 50, t: 50, r: 50, b: 50 } (centered)
+	 */
+	fillToRect?: { l?: number, t?: number, r?: number, b?: number }
+}
+/**
+ * Shape fill properties - union of all fill types
+ */
+export type ShapeFillProps = SolidShapeFillProps | LinearGradientShapeFillProps | PathGradientShapeFillProps
+/**
+ * Text fill properties - can be a simple color string or a gradient fill
+ * - Use a string for simple solid colors (e.g., 'FF0000' or pptx.SchemeColor.text1)
+ * - Use LinearGradientShapeFillProps or PathGradientShapeFillProps for gradient text fills
+ */
+export type TextFillProps = Color | LinearGradientShapeFillProps | PathGradientShapeFillProps
 export interface SolidShapeFillProps {
 	/**
 	 * Fill color
@@ -406,13 +439,14 @@ export interface TextBaseProps {
 		style?: string
 	}
 	/**
-	 * Text color
-	 * - `HexColor` or `ThemeColor`
-	 * - MS-PPT > Format Shape > Text Options > Text Fill & Outline > Text Fill > Color
+	 * Text color/fill
+	 * - `HexColor`, `ThemeColor`, or gradient fill (LinearGradientShapeFillProps, PathGradientShapeFillProps)
+	 * - MS-PPT > Format Shape > Text Options > Text Fill & Outline > Text Fill
 	 * @example 'FF0000' // hex color (red)
 	 * @example pptx.SchemeColor.text1 // Theme color (Text1)
+	 * @example { type: 'linearGradient', stops: [{ position: 0, color: 'FF0000' }, { position: 100, color: '0000FF' }], angle: 45 } // gradient
 	 */
-	color?: Color
+	color?: TextFillProps
 	/**
 	 * Font face name
 	 * @example 'Arial' // Arial font
@@ -696,7 +730,7 @@ export interface ShapeProps extends PositionProps, ObjectNameProps {
 	 * @example { color:'0088CC', transparency:50 } // hex color, 50% transparent
 	 * @example { color:pptx.SchemeColor.accent1 } // Theme color Accent1
 	 */
-	fill?: LinearGradientShapeFillProps | SolidShapeFillProps
+	fill?: ShapeFillProps
 	/**
 	 * Flip shape horizontally?
 	 * @default false
@@ -893,7 +927,7 @@ export interface TableCellProps extends TextBaseProps {
 	 * @example { color:'0088CC', transparency:50 } // hex color, 50% transparent
 	 * @example { color:pptx.SchemeColor.accent1 } // theme color Accent1
 	 */
-	fill?: LinearGradientShapeFillProps | SolidShapeFillProps
+	fill?: ShapeFillProps
 	hyperlink?: HyperlinkProps
 	/**
 	 * Cell margin (inches)
@@ -971,7 +1005,7 @@ export interface TableProps extends PositionProps, TextBaseProps, ObjectNameProp
 	 * @example { color:'0088CC', transparency:50 } // hex color, 50% transparent
 	 * @example { color:pptx.SchemeColor.accent1 } // theme color Accent1
 	 */
-	fill?: LinearGradientShapeFillProps | SolidShapeFillProps
+	fill?: ShapeFillProps
 	/**
 	 * Cell margin (inches)
 	 * - affects all table cells, is superceded by cell options
@@ -1078,7 +1112,7 @@ export interface TextPropsOptions extends PositionProps, DataOrPathProps, TextBa
 	 * @example { color:'0088CC', transparency:50 } // hex color, 50% transparent
 	 * @example { color:pptx.SchemeColor.accent1 } // theme color Accent1
 	 */
-	fill?: LinearGradientShapeFillProps | SolidShapeFillProps
+	fill?: ShapeFillProps
 	/**
 	 * Flip shape horizontally?
 	 * @default false
@@ -1282,7 +1316,7 @@ export interface IChartPropsFillLine {
 	 * @example fill: {color: pptx.SchemeColor.background2} // Theme color value
 	 * @example fill: {transparency: 50} // 50% transparency
 	 */
-	fill?: LinearGradientShapeFillProps | SolidShapeFillProps
+	fill?: ShapeFillProps
 }
 export interface IChartAreaProps extends IChartPropsFillLine {
 	/**
@@ -1648,7 +1682,12 @@ export interface IChartPropsLegend {
 	legendFontSize?: number
 	legendPos?: 'b' | 'l' | 'r' | 't' | 'tr'
 }
-export interface IChartPropsTitle extends TextBaseProps {
+export interface IChartPropsTitle extends Omit<TextBaseProps, 'color'> {
+	/**
+	 * Chart title text color (hex only for charts)
+	 * @example 'FF0000'
+	 */
+	color?: HexColor
 	title?: string
 	titleAlign?: string
 	titleBold?: boolean

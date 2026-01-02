@@ -989,7 +989,14 @@ function genXmlTextRunProperties (opts: ObjectOptions | TextPropsOptions, isDefa
 		if (opts.outline && typeof opts.outline === 'object') {
 			runProps += `<a:ln w="${valToPts(opts.outline.size || 0.75)}">${genXmlColorSelection(opts.outline.color || 'FFFFFF')}</a:ln>`
 		}
-		if (opts.color) runProps += genXmlColorSelection({ color: opts.color, transparency: opts.transparency })
+		if (opts.color) {
+			// Support gradient text colors (LinearGradient or PathGradient objects)
+			if (typeof opts.color === 'object' && 'type' in opts.color) {
+				runProps += genXmlColorSelection(opts.color)
+			} else {
+				runProps += genXmlColorSelection({ color: opts.color, transparency: opts.transparency })
+			}
+		}
 		if (opts.highlight) runProps += `<a:highlight>${createColorElement(opts.highlight)}</a:highlight>`
 		if (typeof opts.underline === 'object' && opts.underline.color) runProps += `<a:uFill>${genXmlColorSelection(opts.underline.color)}</a:uFill>`
 		if (opts.glow) runProps += `<a:effectLst>${createGlowElement(opts.glow, DEF_TEXT_GLOW)}</a:effectLst>`

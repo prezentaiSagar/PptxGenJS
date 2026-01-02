@@ -28,6 +28,7 @@ export function genSlides_Shape(pptx) {
 
 	genSlide01(pptx);
 	genSlide02(pptx);
+	genSlide03(pptx);
 }
 
 /**
@@ -300,6 +301,406 @@ function genSlide02(pptx) {
 			],
 			angle: 45,
 			scaled: 1,
+		},
+	});
+}
+
+/**
+ * SLIDE 3: Gradient Fill Examples
+ * @param {PptxGenJS} pptx
+ */
+function genSlide03(pptx) {
+	let slide = pptx.addSlide({ sectionTitle: "Shapes" });
+
+	slide.addTable([[{ text: "Shape Examples 3: Gradient Fills (Linear & Path/Radial)", options: BASE_TEXT_OPTS_L }, BASE_TEXT_OPTS_R]], BASE_TABLE_OPTS);
+	slide.addNotes("API Docs: https://gitbrent.github.io/PptxGenJS/docs/api-shapes.html");
+
+	// ROW 1: Linear Gradients with different angles
+
+	// Linear gradient 0 degrees (left to right)
+	slide.addText("Linear 0°", {
+		shape: pptx.shapes.RECTANGLE,
+		x: 0.5,
+		y: 0.8,
+		w: 2.0,
+		h: 1.5,
+		fill: {
+			type: "linearGradient",
+			stops: [
+				{ position: 0, color: "FF6B6B" },
+				{ position: 100, color: "4ECDC4" },
+			],
+			angle: 0,
+		},
+		align: "center",
+		fontSize: 12,
+		color: "FFFFFF",
+	});
+
+	// Linear gradient 45 degrees
+	slide.addText("Linear 45°", {
+		shape: pptx.shapes.RECTANGLE,
+		x: 2.7,
+		y: 0.8,
+		w: 2.0,
+		h: 1.5,
+		fill: {
+			type: "linearGradient",
+			stops: [
+				{ position: 0, color: "667EEA" },
+				{ position: 100, color: "764BA2" },
+			],
+			angle: 45,
+		},
+		align: "center",
+		fontSize: 12,
+		color: "FFFFFF",
+	});
+
+	// Linear gradient 90 degrees (top to bottom)
+	slide.addText("Linear 90°", {
+		shape: pptx.shapes.RECTANGLE,
+		x: 4.9,
+		y: 0.8,
+		w: 2.0,
+		h: 1.5,
+		fill: {
+			type: "linearGradient",
+			stops: [
+				{ position: 0, color: "F093FB" },
+				{ position: 100, color: "F5576C" },
+			],
+			angle: 90,
+		},
+		align: "center",
+		fontSize: 12,
+		color: "FFFFFF",
+	});
+
+	// Linear gradient with 3 stops
+	slide.addText("3-Stop Gradient", {
+		shape: pptx.shapes.RECTANGLE,
+		x: 7.1,
+		y: 0.8,
+		w: 2.0,
+		h: 1.5,
+		fill: {
+			type: "linearGradient",
+			stops: [
+				{ position: 0, color: "FF0000" },
+				{ position: 50, color: "00FF00" },
+				{ position: 100, color: "0000FF" },
+			],
+			angle: 0,
+		},
+		align: "center",
+		fontSize: 12,
+		color: "FFFFFF",
+	});
+
+	// Linear gradient with transparency
+	slide.addText("With Transparency", {
+		shape: pptx.shapes.RECTANGLE,
+		x: 9.3,
+		y: 0.8,
+		w: 2.0,
+		h: 1.5,
+		fill: {
+			type: "linearGradient",
+			stops: [
+				{ position: 0, color: "1A1A2E", transparency: 0 },
+				{ position: 100, color: "16213E", transparency: 50 },
+			],
+			angle: 135,
+		},
+		align: "center",
+		fontSize: 12,
+		color: "FFFFFF",
+	});
+
+	// Oval with linear gradient
+	slide.addText("Oval Gradient", {
+		shape: pptx.shapes.OVAL,
+		x: 11.5,
+		y: 0.8,
+		w: 1.8,
+		h: 1.5,
+		fill: {
+			type: "linearGradient",
+			stops: [
+				{ position: 0, color: "11998E" },
+				{ position: 100, color: "38EF7D" },
+			],
+			angle: 180,
+		},
+		align: "center",
+		fontSize: 11,
+		color: "FFFFFF",
+	});
+
+	// ROW 2: Path/Radial Gradients
+
+	// Path gradient - circle (default)
+	slide.addText("Path: Circle", {
+		shape: pptx.shapes.RECTANGLE,
+		x: 0.5,
+		y: 2.6,
+		w: 2.0,
+		h: 1.5,
+		fill: {
+			type: "pathGradient",
+			stops: [
+				{ position: 0, color: "FFFFFF" },
+				{ position: 100, color: "667EEA" },
+			],
+			path: "circle",
+		},
+		align: "center",
+		fontSize: 12,
+	});
+
+	// Path gradient - rect
+	slide.addText("Path: Rect", {
+		shape: pptx.shapes.RECTANGLE,
+		x: 2.7,
+		y: 2.6,
+		w: 2.0,
+		h: 1.5,
+		fill: {
+			type: "pathGradient",
+			stops: [
+				{ position: 0, color: "FFFFFF" },
+				{ position: 100, color: "F093FB" },
+			],
+			path: "rect",
+		},
+		align: "center",
+		fontSize: 12,
+	});
+
+	// Path gradient - shape
+	slide.addText("Path: Shape", {
+		shape: pptx.shapes.OVAL,
+		x: 4.9,
+		y: 2.6,
+		w: 2.0,
+		h: 1.5,
+		fill: {
+			type: "pathGradient",
+			stops: [
+				{ position: 0, color: "FFFFFF" },
+				{ position: 100, color: "FF6B6B" },
+			],
+			path: "shape",
+		},
+		align: "center",
+		fontSize: 12,
+	});
+
+	// Path gradient with custom fillToRect (off-center)
+	slide.addText("Off-Center", {
+		shape: pptx.shapes.RECTANGLE,
+		x: 7.1,
+		y: 2.6,
+		w: 2.0,
+		h: 1.5,
+		fill: {
+			type: "pathGradient",
+			stops: [
+				{ position: 0, color: "FFFFFF" },
+				{ position: 100, color: "4ECDC4" },
+			],
+			path: "circle",
+			fillToRect: { l: 25, t: 25, r: 75, b: 75 },
+		},
+		align: "center",
+		fontSize: 12,
+	});
+
+	// Path gradient with transparency
+	slide.addText("Path Transparent", {
+		shape: pptx.shapes.RECTANGLE,
+		x: 9.3,
+		y: 2.6,
+		w: 2.0,
+		h: 1.5,
+		fill: {
+			type: "pathGradient",
+			stops: [
+				{ position: 0, color: "FFFFFF", transparency: 0 },
+				{ position: 100, color: "764BA2", transparency: 30 },
+			],
+			path: "circle",
+		},
+		align: "center",
+		fontSize: 12,
+	});
+
+	// Rounded rectangle with path gradient
+	slide.addText("Rounded Path", {
+		shape: pptx.shapes.ROUNDED_RECTANGLE,
+		x: 11.5,
+		y: 2.6,
+		w: 1.8,
+		h: 1.5,
+		rectRadius: 0.3,
+		fill: {
+			type: "pathGradient",
+			stops: [
+				{ position: 0, color: "FFFFFF" },
+				{ position: 100, color: "11998E" },
+			],
+			path: "circle",
+		},
+		align: "center",
+		fontSize: 11,
+	});
+
+	// ROW 3: Text with Gradient Colors
+
+	// Text with linear gradient
+	slide.addText("Gradient Text (Linear)", {
+		x: 0.5,
+		y: 4.4,
+		w: 4.0,
+		h: 0.8,
+		fontSize: 24,
+		bold: true,
+		color: {
+			type: "linearGradient",
+			stops: [
+				{ position: 0, color: "FF6B6B" },
+				{ position: 100, color: "4ECDC4" },
+			],
+			angle: 0,
+		},
+	});
+
+	// Text with path gradient
+	slide.addText("Gradient Text (Path)", {
+		x: 4.7,
+		y: 4.4,
+		w: 4.0,
+		h: 0.8,
+		fontSize: 24,
+		bold: true,
+		color: {
+			type: "pathGradient",
+			stops: [
+				{ position: 0, color: "FFFFFF" },
+				{ position: 100, color: "667EEA" },
+			],
+			path: "circle",
+		},
+	});
+
+	// Text with 3-color gradient
+	slide.addText("Rainbow Text", {
+		x: 8.9,
+		y: 4.4,
+		w: 4.5,
+		h: 0.8,
+		fontSize: 24,
+		bold: true,
+		color: {
+			type: "linearGradient",
+			stops: [
+				{ position: 0, color: "FF0000" },
+				{ position: 50, color: "00FF00" },
+				{ position: 100, color: "0000FF" },
+			],
+			angle: 0,
+		},
+	});
+
+	// ROW 4: More gradient examples
+
+	// Shape with gradient fill and solid text
+	slide.addText("Shape with gradient,\nsolid text color", {
+		shape: pptx.shapes.RECTANGLE,
+		x: 0.5,
+		y: 5.4,
+		w: 3.5,
+		h: 1.5,
+		fill: {
+			type: "linearGradient",
+			stops: [
+				{ position: 0, color: "2C3E50" },
+				{ position: 100, color: "3498DB" },
+			],
+			angle: 45,
+		},
+		align: "center",
+		fontSize: 14,
+		color: "FFFFFF",
+	});
+
+	// Triangle with gradient
+	slide.addText("Triangle", {
+		shape: pptx.shapes.RIGHT_TRIANGLE,
+		x: 4.2,
+		y: 5.4,
+		w: 2.5,
+		h: 1.5,
+		fill: {
+			type: "linearGradient",
+			stops: [
+				{ position: 0, color: "E74C3C" },
+				{ position: 100, color: "9B59B6" },
+			],
+			angle: 45,
+		},
+		align: "center",
+		fontSize: 12,
+		color: "FFFFFF",
+	});
+
+	// Pentagon with path gradient
+	slide.addShape(pptx.shapes.PENTAGON, {
+		x: 7.0,
+		y: 5.4,
+		w: 2.0,
+		h: 1.5,
+		fill: {
+			type: "pathGradient",
+			stops: [
+				{ position: 0, color: "FFFFFF" },
+				{ position: 100, color: "1ABC9C" },
+			],
+			path: "shape",
+		},
+	});
+
+	// Diamond with linear gradient
+	slide.addShape(pptx.shapes.DIAMOND, {
+		x: 9.3,
+		y: 5.3,
+		w: 1.6,
+		h: 1.6,
+		fill: {
+			type: "linearGradient",
+			stops: [
+				{ position: 0, color: "F39C12" },
+				{ position: 100, color: "E74C3C" },
+			],
+			angle: 135,
+		},
+	});
+
+	// Hexagon with path gradient
+	slide.addShape(pptx.shapes.HEXAGON, {
+		x: 11.2,
+		y: 5.4,
+		w: 2.0,
+		h: 1.5,
+		fill: {
+			type: "pathGradient",
+			stops: [
+				{ position: 0, color: "ECF0F1" },
+				{ position: 100, color: "34495E" },
+			],
+			path: "circle",
+			fillToRect: { l: 50, t: 50, r: 50, b: 50 },
 		},
 	});
 }

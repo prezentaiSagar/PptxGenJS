@@ -894,19 +894,21 @@ declare namespace PptxGenJS {
 		 */
 		data?: string
 	}
-	export interface BackgroundProps extends DataOrPathProps, ShapeFillProps {
+	/**
+	 * Background properties for slides - supports solid colors, gradients, and images
+	 */
+	export type BackgroundProps = (DataOrPathProps & SolidShapeFillProps & {
 		/**
 		 * Color (hex format)
 		 * @deprecated v3.6.0 - use `ShapeFillProps` instead
 		 */
 		fill?: HexColor
-
 		/**
 		 * source URL
 		 * @deprecated v3.6.0 - use `DataOrPathProps` instead - remove in v4.0.0
 		 */
 		src?: string
-	}
+	}) | (DataOrPathProps & LinearGradientShapeFillProps) | (DataOrPathProps & PathGradientShapeFillProps)
 	/**
 	 * Color in Hex format
 	 * @example 'FF3399'
@@ -914,6 +916,119 @@ declare namespace PptxGenJS {
 	export type HexColor = string
 	export type ThemeColor = 'tx1' | 'tx2' | 'bg1' | 'bg2' | 'accent1' | 'accent2' | 'accent3' | 'accent4' | 'accent5' | 'accent6'
 	export type Color = HexColor | ThemeColor
+	/**
+	 * Gradient stop defining color and position within a gradient
+	 */
+	export interface GradientStop {
+		/**
+		 * Position of the stop (percent)
+		 * - range: 0-100
+		 */
+		position: number
+		/**
+		 * Color at this stop
+		 */
+		color: Color
+		/**
+		 * Transparency at this stop (percent)
+		 * - range: 0-100
+		 */
+		transparency?: number
+	}
+	/**
+	 * Base gradient properties shared by linear and path gradients
+	 */
+	interface BaseGradientShapeFillProps {
+		/**
+		 * Gradient stops
+		 */
+		stops: GradientStop[]
+		/**
+		 * Rotate with shape
+		 * @default true
+		 */
+		rotWithShape?: boolean
+		/**
+		 * Tile rectangle
+		 */
+		tileRect?: { t?: number; r?: number; b?: number; l?: number }
+		/**
+		 * Gradient flip direction
+		 * @default 'none'
+		 */
+		flip?: 'none' | 'x' | 'xy' | 'y'
+	}
+	/**
+	 * Linear gradient fill properties
+	 */
+	export interface LinearGradientShapeFillProps extends BaseGradientShapeFillProps {
+		/**
+		 * Fill type
+		 */
+		type: 'linearGradient'
+		/**
+		 * Linear gradient angle (degrees)
+		 * - range: 0-359
+		 * @default 0
+		 */
+		angle?: number
+		/**
+		 * Scaled
+		 * @default false
+		 */
+		scaled?: boolean
+	}
+	/**
+	 * Path/Radial gradient fill properties
+	 */
+	export interface PathGradientShapeFillProps extends BaseGradientShapeFillProps {
+		/**
+		 * Fill type
+		 */
+		type: 'pathGradient'
+		/**
+		 * Path type for radial/path gradient
+		 * - 'circle' - circular gradient from center
+		 * - 'rect' - rectangular gradient from center
+		 * - 'shape' - gradient follows shape outline
+		 * @default 'circle'
+		 */
+		path?: 'circle' | 'rect' | 'shape'
+		/**
+		 * Fill to rectangle - defines the gradient center position
+		 * - Values are percentages (0-100) from each edge
+		 * @default { l: 50, t: 50, r: 50, b: 50 }
+		 */
+		fillToRect?: { l?: number; t?: number; r?: number; b?: number }
+	}
+	/**
+	 * Solid fill properties
+	 */
+	export interface SolidShapeFillProps {
+		/**
+		 * Fill type
+		 * @default 'solid'
+		 */
+		type?: 'none' | 'solid'
+		/**
+		 * Fill color
+		 */
+		color?: Color
+		/**
+		 * Transparency (percent)
+		 * - range: 0-100
+		 * @default 0
+		 */
+		transparency?: number
+		/**
+		 * @deprecated v3.3.0 - use `transparency`
+		 */
+		alpha?: number
+	}
+	/**
+	 * Text fill properties - can be a simple color string or a gradient fill
+	 */
+	export type TextFillProps = Color | LinearGradientShapeFillProps | PathGradientShapeFillProps
 	export type Margin = number | [number, number, number, number]
 	export type HAlign = 'left' | 'center' | 'right' | 'justify'
 	export type VAlign = 'top' | 'middle' | 'bottom'
@@ -1000,34 +1115,14 @@ declare namespace PptxGenJS {
 		rotateWithShape?: boolean
 	}
 	// used by: shape, table, text
-	export interface ShapeFillProps {
-		/**
-		 * Fill color
-		 * - `HexColor` or `ThemeColor`
-		 * @example 'FF0000' // hex color (red)
-		 * @example pptx.SchemeColor.text1 // Theme color (Text1)
-		 */
-		color?: Color
-		/**
-		 * Transparency (percent)
-		 * - MS-PPT > Format Shape > Fill & Line > Fill > Transparency
-		 * - range: 0-100
-		 * @default 0
-		 */
-		transparency?: number
-		/**
-		 * Fill type
-		 * @default 'solid'
-		 */
-		type?: 'none' | 'solid'
-
-		/**
-		 * Transparency (percent)
-		 * @deprecated v3.3.0 - use `transparency`
-		 */
-		alpha?: number
-	}
-	export interface ShapeLineProps extends ShapeFillProps {
+	/**
+	 * Shape fill properties - supports solid, linear gradient, and path gradient fills
+	 * @example { color: 'FF0000' } // solid red
+	 * @example { type: 'linearGradient', stops: [{ position: 0, color: 'FF0000' }, { position: 100, color: '0000FF' }], angle: 45 }
+	 * @example { type: 'pathGradient', stops: [{ position: 0, color: 'FF0000' }, { position: 100, color: '0000FF' }], path: 'circle' }
+	 */
+	export type ShapeFillProps = SolidShapeFillProps | LinearGradientShapeFillProps | PathGradientShapeFillProps
+	export interface ShapeLineProps extends SolidShapeFillProps {
 		/**
 		 * Line width (pt)
 		 * @default 1
@@ -1174,13 +1269,14 @@ declare namespace PptxGenJS {
 			style?: string
 		}
 		/**
-		 * Text color
-		 * - `HexColor` or `ThemeColor`
-		 * - MS-PPT > Format Shape > Text Options > Text Fill & Outline > Text Fill > Color
+		 * Text color/fill
+		 * - `HexColor`, `ThemeColor`, or gradient fill
+		 * - MS-PPT > Format Shape > Text Options > Text Fill & Outline > Text Fill
 		 * @example 'FF0000' // hex color (red)
 		 * @example pptx.SchemeColor.text1 // Theme color (Text1)
+		 * @example { type: 'linearGradient', stops: [{ position: 0, color: 'FF0000' }, { position: 100, color: '0000FF' }], angle: 45 }
 		 */
-		color?: Color
+		color?: TextFillProps
 		/**
 		 * Font face name
 		 * @example 'Arial' // Arial font

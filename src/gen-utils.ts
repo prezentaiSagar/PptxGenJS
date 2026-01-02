@@ -3,7 +3,7 @@
  */
 
 import { EMU, REGEX_HEX_COLOR, DEF_FONT_COLOR, ONEPT, SchemeColor, SCHEME_COLORS } from './core-enums'
-import { PresLayout, TextGlowProps, PresSlide, SolidShapeFillProps, Color, ShapeLineProps, Coord, ShadowProps, LinearGradientShapeFillProps } from './core-interfaces'
+import { PresLayout, TextGlowProps, PresSlide, SolidShapeFillProps, Color, ShapeLineProps, Coord, ShadowProps, LinearGradientShapeFillProps, PathGradientShapeFillProps, ShapeFillProps } from './core-interfaces'
 
 /**
  * Translates any type of `x`/`y`/`w`/`h` prop to EMU
@@ -185,14 +185,14 @@ export function createGlowElement (options: TextGlowProps, defaults: TextGlowPro
  * @param {Color | ShapeFillProps | ShapeLineProps} props fill props
  * @returns XML string
  */
-export function genXmlColorSelection (props: Color | SolidShapeFillProps | ShapeLineProps | LinearGradientShapeFillProps): string {
+export function genXmlColorSelection (props: Color | ShapeFillProps | ShapeLineProps): string {
 	if (!props) {
 		return ''
 	}
 
 	let outText = ''
 
-	let safeProps: SolidShapeFillProps | ShapeLineProps | LinearGradientShapeFillProps = {}
+	let safeProps: SolidShapeFillProps | ShapeLineProps | LinearGradientShapeFillProps | PathGradientShapeFillProps = {}
 	if (typeof props === 'string') {
 		safeProps.type = 'solid'
 		safeProps.color = props
@@ -255,6 +255,59 @@ export function genXmlColorSelection (props: Color | SolidShapeFillProps | Shape
 				const lAttr = safeProps.tileRect.l ? `l="${safeProps.tileRect.l * 1000}"` : ''
 
 				outText += `<a:tileRect ${tAttr} ${rAttr} ${bAttr} ${lAttr}/>`
+			}
+
+			outText += '</a:gradFill>'
+			break
+		}
+
+		case 'pathGradient': {
+			const stops = safeProps.stops ?? []
+			const rotWithShape = safeProps.rotWithShape ?? true
+			const flip = safeProps.flip ?? 'none'
+			const path = safeProps.path ?? 'circle'
+			const fillToRect = safeProps.fillToRect ?? { l: 50, t: 50, r: 50, b: 50 }
+
+			outText += `<a:gradFill rotWithShape="${rotWithShape ? 1 : 0}" flip="${flip}">`
+
+			if (stops.length > 0) {
+				outText += '<a:gsLst>'
+
+				outText += stops.map(
+					({ position, color: stopColor, transparency }) => {
+						const stopInternalElements = transparency
+							? `<a:alpha val="${Math.round((100 - transparency) * 1000)}"/>`
+							: ''
+
+						return `<a:gs pos="${position * 1000}">${createColorElement(stopColor, stopInternalElements)}</a:gs>`
+					}
+				).join('')
+
+				outText += '</a:gsLst>'
+			}
+
+			// Path element with fillToRect
+			const lAttr = fillToRect.l !== undefined ? ` l="${Math.round(fillToRect.l * 1000)}"` : ''
+			const tAttr = fillToRect.t !== undefined ? ` t="${Math.round(fillToRect.t * 1000)}"` : ''
+			const rAttr = fillToRect.r !== undefined ? ` r="${Math.round(fillToRect.r * 1000)}"` : ''
+			const bAttr = fillToRect.b !== undefined ? ` b="${Math.round(fillToRect.b * 1000)}"` : ''
+			outText += `<a:path path="${path}"><a:fillToRect${lAttr}${tAttr}${rAttr}${bAttr}/></a:path>`
+
+			if (
+				safeProps.tileRect &&
+				(
+					safeProps.tileRect.t ||
+					safeProps.tileRect.r ||
+					safeProps.tileRect.b ||
+					safeProps.tileRect.l
+				)
+			) {
+				const tileT = safeProps.tileRect.t ? `t="${safeProps.tileRect.t * 1000}"` : ''
+				const tileR = safeProps.tileRect.r ? `r="${safeProps.tileRect.r * 1000}"` : ''
+				const tileB = safeProps.tileRect.b ? `b="${safeProps.tileRect.b * 1000}"` : ''
+				const tileL = safeProps.tileRect.l ? `l="${safeProps.tileRect.l * 1000}"` : ''
+
+				outText += `<a:tileRect ${tileT} ${tileR} ${tileB} ${tileL}/>`
 			}
 
 			outText += '</a:gradFill>'
